@@ -8,10 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		71565E112E8286AE004F6104 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 71565E102E8286AE004F6104 /* SwiftyJSON */; };
+		71AFBE742E83B06F00585F25 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 71AFBE732E83B06F00585F25 /* README.md */; };
+		71AFBEC02E83B58700585F25 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 71AFBEBF2E83B58700585F25 /* LICENSE */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		71565CD62E8277DE004F6104 /* BilibiliLiveStremCodeSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLiveStremCodeSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		71AFBE732E83B06F00585F25 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		71AFBEBF2E83B58700585F25 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,6 +41,8 @@
 		71565CCD2E8277DE004F6104 = {
 			isa = PBXGroup;
 			children = (
+				71AFBEBF2E83B58700585F25 /* LICENSE */,
+				71AFBE732E83B06F00585F25 /* README.md */,
 				71565CD82E8277DE004F6104 /* BilibiliLiveStremCodeSwift */,
 				71565CD72E8277DE004F6104 /* Products */,
 			);
@@ -118,6 +124,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				71AFBE742E83B06F00585F25 /* README.md in Resources */,
+				71AFBEC02E83B58700585F25 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
