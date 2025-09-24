@@ -60,6 +60,10 @@
 - **开播失败** → 检查分区设置
 - **人脸认证** → 用手机客户端扫码
 
+## 贡献者
+
+![cr](https://contrib.rocks/image?repo=sosoorin/BilibiliStreamHelper)
+
 ## 📄 许可证
 
  [Apache License 2.0](./LICENSE)
