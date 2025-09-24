@@ -4,7 +4,7 @@
 
 ![Platform](https://img.shields.io/badge/Platform-macOS-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-macOS%2013.0+-green)
+![SwiftUI](https://img.shields.io/badge/macOS-13.0+-green)
 ![License](https://img.shields.io/badge/License-Apache%202.0-red)
 
 一个使用 Swift 6 + SwiftUI 开发的哔哩哔哩直播推流码获取工具，帮助用户快速获取直播推流信息，方便使用 OBS 等推流软件进行直播。
