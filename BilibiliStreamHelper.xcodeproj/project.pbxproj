@@ -13,15 +13,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		71565CD62E8277DE004F6104 /* BilibiliLiveStremCodeSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLiveStremCodeSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		71565CD62E8277DE004F6104 /* BilibiliStreamHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliStreamHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		71AFBE732E83B06F00585F25 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		71AFBEBF2E83B58700585F25 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		71565CD82E8277DE004F6104 /* BilibiliLiveStremCodeSwift */ = {
+		71565CD82E8277DE004F6104 /* BilibiliStreamHelper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BilibiliLiveStremCodeSwift;
+			path = BilibiliStreamHelper;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -43,7 +43,7 @@
 			children = (
 				71AFBEBF2E83B58700585F25 /* LICENSE */,
 				71AFBE732E83B06F00585F25 /* README.md */,
-				71565CD82E8277DE004F6104 /* BilibiliLiveStremCodeSwift */,
+				71565CD82E8277DE004F6104 /* BilibiliStreamHelper */,
 				71565CD72E8277DE004F6104 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,7 +51,7 @@
 		71565CD72E8277DE004F6104 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				71565CD62E8277DE004F6104 /* BilibiliLiveStremCodeSwift.app */,
+				71565CD62E8277DE004F6104 /* BilibiliStreamHelper.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,9 +59,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		71565CD52E8277DE004F6104 /* BilibiliLiveStremCodeSwift */ = {
+		71565CD52E8277DE004F6104 /* BilibiliStreamHelper */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 71565CE12E8277DE004F6104 /* Build configuration list for PBXNativeTarget "BilibiliLiveStremCodeSwift" */;
+			buildConfigurationList = 71565CE12E8277DE004F6104 /* Build configuration list for PBXNativeTarget "BilibiliStreamHelper" */;
 			buildPhases = (
 				71565CD22E8277DE004F6104 /* Sources */,
 				71565CD32E8277DE004F6104 /* Frameworks */,
@@ -72,14 +72,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				71565CD82E8277DE004F6104 /* BilibiliLiveStremCodeSwift */,
+				71565CD82E8277DE004F6104 /* BilibiliStreamHelper */,
 			);
-			name = BilibiliLiveStremCodeSwift;
+			name = BilibiliStreamHelper;
 			packageProductDependencies = (
 				71565E102E8286AE004F6104 /* SwiftyJSON */,
 			);
 			productName = BilibiliLiveStremCodeSwift;
-			productReference = 71565CD62E8277DE004F6104 /* BilibiliLiveStremCodeSwift.app */;
+			productReference = 71565CD62E8277DE004F6104 /* BilibiliStreamHelper.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -97,7 +97,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 71565CD12E8277DE004F6104 /* Build configuration list for PBXProject "BilibiliLiveStremCodeSwift" */;
+			buildConfigurationList = 71565CD12E8277DE004F6104 /* Build configuration list for PBXProject "BilibiliStreamHelper" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -114,7 +114,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				71565CD52E8277DE004F6104 /* BilibiliLiveStremCodeSwift */,
+				71565CD52E8277DE004F6104 /* BilibiliStreamHelper */,
 			);
 		};
 /* End PBXProject section */
@@ -325,7 +325,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		71565CD12E8277DE004F6104 /* Build configuration list for PBXProject "BilibiliLiveStremCodeSwift" */ = {
+		71565CD12E8277DE004F6104 /* Build configuration list for PBXProject "BilibiliStreamHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				71565CDF2E8277DE004F6104 /* Debug */,
@@ -334,7 +334,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		71565CE12E8277DE004F6104 /* Build configuration list for PBXNativeTarget "BilibiliLiveStremCodeSwift" */ = {
+		71565CE12E8277DE004F6104 /* Build configuration list for PBXNativeTarget "BilibiliStreamHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				71565CE22E8277DE004F6104 /* Debug */,
