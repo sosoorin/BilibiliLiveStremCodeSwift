@@ -1,0 +1,180 @@
+name: Release macOS App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  APP_NAME: BilibiliStreamHelper
+  SCHEME_NAME: BilibiliStreamHelper
+  CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '26.0'
+    
+    - name: Set up environment variables
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        fi
+        echo "BUILD_NUMBER=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+        echo "ARCHIVE_PATH=${{ runner.temp }}/${{ env.APP_NAME }}.xcarchive" >> $GITHUB_ENV
+        echo "EXPORT_PATH=${{ runner.temp }}/export" >> $GITHUB_ENV
+
+    - name: Cache Swift Package Manager
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    - name: Resolve Swift packages
+      run: |
+        xcodebuild -resolvePackageDependencies -project ${{ env.APP_NAME }}.xcodeproj -scheme ${{ env.SCHEME_NAME }}
+
+    - name: Update build number and version
+      run: |
+        # Update version and build number in project.pbxproj
+        sed -i '' "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${VERSION#v}/" ${{ env.APP_NAME }}.xcodeproj/project.pbxproj
+        sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER/" ${{ env.APP_NAME }}.xcodeproj/project.pbxproj
+
+    - name: Build and Archive
+      run: |
+        xcodebuild archive \
+          -project ${{ env.APP_NAME }}.xcodeproj \
+          -scheme ${{ env.SCHEME_NAME }} \
+          -configuration ${{ env.CONFIGURATION }} \
+          -archivePath "$ARCHIVE_PATH" \
+          -destination "generic/platform=macOS" \
+          -allowProvisioningUpdates \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Export Archive
+      run: |
+        mkdir -p "$EXPORT_PATH"
+        
+        # Create ExportOptions.plist
+        cat > "${{ runner.temp }}/ExportOptions.plist" << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>mac-application</string>
+            <key>destination</key>
+            <string>export</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportOptionsPlist "${{ runner.temp }}/ExportOptions.plist" \
+          -exportPath "$EXPORT_PATH" \
+          -allowProvisioningUpdates
+
+    - name: Create DMG
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        DMG_PATH="${{ runner.temp }}/$APP_NAME-$VERSION-macos.dmg"
+        
+        # Create temporary directory for DMG content
+        DMG_TEMP_DIR="${{ runner.temp }}/dmg_temp"
+        mkdir -p "$DMG_TEMP_DIR"
+        
+        # Copy app to temp directory
+        cp -R "$APP_PATH" "$DMG_TEMP_DIR/"
+        
+        # Create DMG
+        hdiutil create -volname "$APP_NAME $VERSION" \
+          -srcfolder "$DMG_TEMP_DIR" \
+          -ov -format UDZO \
+          "$DMG_PATH"
+        
+        echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+
+    - name: Create ZIP archive
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        ZIP_PATH="${{ runner.temp }}/$APP_NAME-$VERSION-macos.zip"
+        
+        cd "$EXPORT_PATH"
+        zip -r "$ZIP_PATH" "$APP_NAME.app"
+        
+        echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
+
+    - name: Generate Release Notes
+      run: |
+        cat > "${{ runner.temp }}/release_notes.md" << EOF
+        # ${{ env.APP_NAME }} ${{ env.VERSION }}
+        
+        ## 🚀 新功能
+        - 自动构建和发布流程
+        - 支持 macOS 13.0+
+        
+        ## 📦 下载
+        - **DMG 安装包**: 推荐使用，双击安装
+        - **ZIP 压缩包**: 解压后拖拽到应用程序文件夹
+        
+        ## 🔧 技术信息
+        - Swift 6.0
+        - SwiftUI
+        - 构建号: ${{ env.BUILD_NUMBER }}
+        
+        ## ⚠️ 系统要求
+        - macOS 13.0 或更高版本
+        
+        ---
+        
+        **完整更新日志**: [查看提交历史](https://github.com/${{ github.repository }}/commits/${{ env.VERSION }})
+        EOF
+
+    - name: Create Release
+      uses: ncipollo/create-release@v1
+      with:
+        tag: ${{ env.VERSION }}
+        name: ${{ env.APP_NAME }} ${{ env.VERSION }}
+        bodyFile: ${{ runner.temp }}/release_notes.md
+        draft: false
+        prerelease: false
+        artifacts: |
+          ${{ env.DMG_PATH }}
+          ${{ env.ZIP_PATH }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APP_NAME }}-${{ env.VERSION }}-artifacts
+        path: |
+          ${{ env.DMG_PATH }}
+          ${{ env.ZIP_PATH }}
+        retention-days: 30
