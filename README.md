@@ -1,17 +1,13 @@
-# BilibiliStreamHelper for macOS
-
 <div align="center">
+<h1 align="center" style="margin-top: 0">BilibiliStreamHelper for macOS</h1>
 
-![Platform](https://img.shields.io/badge/Platform-macOS-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
-![SwiftUI](https://img.shields.io/badge/macOS-13.0+-green)
+![Platform](https://img.shields.io/badge/macOS-13.0+-green)
 ![License](https://img.shields.io/badge/License-Apache%202.0-red)
 ![Version](https://img.shields.io/badge/Version-v1.1.0-brightgreen)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
 
 使用 Swift 6 + SwiftUI 开发的哔哩哔哩直播推流码获取工具。
-
-**✨ 具备完整的 CI/CD 自动化流程，支持一键构建和发布！**
 
 </div>
 
@@ -39,7 +35,7 @@
 
 #### 方式一：下载预编译版本（推荐）
 1. 访问 [Releases 页面](https://github.com/sosoorin/BilibiliStreamHelper/releases)
-2. 下载最新的 `BilibiliStreamHelper-v1.1.0-macos.dmg`
+2. 下载最新的 `BilibiliStreamHelper-vX.X.X-macos.dmg`
 3. 双击安装，拖拽到应用程序文件夹
 
 #### 方式二：从源码构建
@@ -69,10 +65,8 @@ make open
 ## 🏗️ 技术栈
 
 ### 核心技术
-- **Swift 6** + **SwiftUI** - 现代化的用户界面
-- **URLSession** - 网络请求处理
-- **Keychain Services** - 安全存储敏感信息
-- **CoreImage** - 二维码生成和处理
+- **Swift 6** + **SwiftUI** - 现代化界面
+- **Keychain** - 安全存储
 
 ### 开发工具链
 - **Xcode 26.0** - 最新开发环境
@@ -82,42 +76,52 @@ make open
 
 ## 🛠️ 开发者指南
 
-### 快速开发环境设置
+<details>
+<summary><strong>🚀 快速开始</strong></summary>
+
 ```bash
-# 完整的开发环境设置
+# 克隆项目
+git clone https://github.com/your-username/BilibiliLiveStremCodeSwift.git
+cd BilibiliLiveStremCodeSwift
+
+# 环境设置
 make dev-setup
 
-# 查看项目状态
-make status
-
-# 运行构建
+# 构建运行
 make build
-
-# 查看所有可用命令
-make help
 ```
 
-### CI/CD 流程
-项目配备完整的自动化流程：
-- **自动构建**: 推送标签时自动触发
-- **多架构支持**: arm64 + x86_64
-- **自动发布**: 生成DMG和ZIP安装包
-- **版本管理**: 语义化版本控制
+</details>
 
-详细说明请参考：
-- [CI/CD 快速指南](CICD_QUICKSTART.md)
-- [完整CI/CD文档](docs/CI_CD_SETUP.md)
+<details>
+<summary><strong>📦 发布流程</strong></summary>
 
-### 版本发布
 ```bash
-# 增加版本号
+# 版本管理
 make bump-patch   # 1.0.0 → 1.0.1
 make bump-minor   # 1.0.0 → 1.1.0  
 make bump-major   # 1.0.0 → 2.0.0
 
-# 创建发布
-make release
+# 自动发布
+make release      # 创建 GitHub Release
 ```
+
+**自动化特性**：推送标签后自动构建 DMG/ZIP 安装包
+
+</details>
+
+<details>
+<summary><strong>🤝 参与贡献</strong></summary>
+
+1. **Fork** 本仓库
+2. **创建分支**: `git checkout -b feature/new-feature`
+3. **提交代码**: `git commit -m "Add new feature"`
+4. **推送分支**: `git push origin feature/new-feature`
+5. **提交 PR**: 创建 Pull Request
+
+**文档参考**: [CI/CD 指南](CICD_QUICKSTART.md) | [详细文档](docs/CI_CD_SETUP.md)
+
+</details>
 
 ## 🐛 常见问题
 
@@ -127,15 +131,10 @@ make release
 - **人脸认证** → 用手机客户端扫码
 - **构建失败** → 检查Xcode版本和依赖
 
-## 🤝 贡献指南
+## 🤖 AI辅助开发声明
 
-欢迎贡献代码！请遵循以下步骤：
+本项目在开发过程中使用了AI工具辅助，包括但不限于代码/文档生成、优化建议和问题解决。
 
-1. Fork 本仓库
-2. 创建功能分支: `git checkout -b feature/amazing-feature`
-3. 提交更改: `git commit -m 'Add some amazing feature'`
-4. 推送分支: `git push origin feature/amazing-feature`
-5. 提交 Pull Request
 
 ## 贡献者
 
