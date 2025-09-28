@@ -1,0 +1,221 @@
+name: Release macOS App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  APP_NAME: BilibiliStreamHelper
+  SCHEME_NAME: BilibiliStreamHelper
+  CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: macos-26
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '26.0'
+    
+    - name: Set up environment variables
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        fi
+        echo "BUILD_NUMBER=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+        echo "ARCHIVE_PATH=${{ runner.temp }}/${{ env.APP_NAME }}.xcarchive" >> $GITHUB_ENV
+        echo "EXPORT_PATH=${{ runner.temp }}/export" >> $GITHUB_ENV
+
+    - name: Cache Swift Package Manager
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    - name: Resolve Swift packages
+      run: |
+        xcodebuild -resolvePackageDependencies -project ${{ env.APP_NAME }}.xcodeproj -scheme ${{ env.SCHEME_NAME }}
+
+    - name: Update build number and version
+      run: |
+        # Update version and build number in project.pbxproj
+        sed -i '' "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${VERSION#v}/" ${{ env.APP_NAME }}.xcodeproj/project.pbxproj
+        sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER/" ${{ env.APP_NAME }}.xcodeproj/project.pbxproj
+
+    - name: Build and Archive
+      run: |
+        xcodebuild archive \
+          -project ${{ env.APP_NAME }}.xcodeproj \
+          -scheme ${{ env.SCHEME_NAME }} \
+          -configuration ${{ env.CONFIGURATION }} \
+          -archivePath "$ARCHIVE_PATH" \
+          -destination "generic/platform=macOS" \
+          -allowProvisioningUpdates \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Export Archive
+      run: |
+        mkdir -p "$EXPORT_PATH"
+        
+        # Create ExportOptions.plist
+        cat > "${{ runner.temp }}/ExportOptions.plist" << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>mac-application</string>
+            <key>destination</key>
+            <string>export</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportOptionsPlist "${{ runner.temp }}/ExportOptions.plist" \
+          -exportPath "$EXPORT_PATH" \
+          -allowProvisioningUpdates
+
+    - name: Create DMG
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        DMG_PATH="${{ runner.temp }}/$APP_NAME-$VERSION-macos.dmg"
+        
+        # Create temporary directory for DMG content
+        DMG_TEMP_DIR="${{ runner.temp }}/dmg_temp"
+        mkdir -p "$DMG_TEMP_DIR"
+        
+        # Copy app to temp directory
+        cp -R "$APP_PATH" "$DMG_TEMP_DIR/"
+        
+        # Create DMG
+        hdiutil create -volname "$APP_NAME $VERSION" \
+          -srcfolder "$DMG_TEMP_DIR" \
+          -ov -format UDZO \
+          "$DMG_PATH"
+        
+        echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+
+    - name: Create ZIP archive
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        ZIP_PATH="${{ runner.temp }}/$APP_NAME-$VERSION-macos.zip"
+        
+        cd "$EXPORT_PATH"
+        zip -r "$ZIP_PATH" "$APP_NAME.app"
+        
+        echo "ZIP_PATH=$ZIP_PATH" >> $GITHUB_ENV
+
+    - name: Generate Release Notes
+      run: |
+        # 复制模板文件并替换占位符
+        cp .github/release_template.md "${{ runner.temp }}/release_notes.md"
+        
+        # 提取当前版本的 CHANGELOG 内容
+        VERSION_NUMBER="${{ env.VERSION }}"
+        # 移除版本号前的 'v' 前缀（如果存在）
+        VERSION_CLEAN=${VERSION_NUMBER#v}
+        
+        # 从 CHANGELOG.md 提取当前版本的内容
+        if [ -f "CHANGELOG.md" ]; then
+          # 查找当前版本的开始行
+          START_LINE=$(grep -n "## \[$VERSION_CLEAN\]" CHANGELOG.md | head -1 | cut -d: -f1)
+          
+          if [ -n "$START_LINE" ]; then
+            # 查找下一个版本标记的行号（作为结束行）
+            END_LINE=$(tail -n +$((START_LINE + 1)) CHANGELOG.md | grep -n "^## \[" | head -1 | cut -d: -f1)
+            
+            if [ -n "$END_LINE" ]; then
+              # 计算实际的结束行号
+              END_LINE=$((START_LINE + END_LINE - 1))
+              # 提取版本内容（跳过版本标题行）
+              CHANGELOG_CONTENT=$(sed -n "$((START_LINE + 1)),$((END_LINE - 1))p" CHANGELOG.md)
+            else
+              # 如果没有找到下一个版本，提取到文件末尾
+              CHANGELOG_CONTENT=$(tail -n +$((START_LINE + 1)) CHANGELOG.md)
+            fi
+          else
+            # 如果没有找到当前版本，使用默认内容
+            CHANGELOG_CONTENT="## 🚀 新功能\n- 请查看完整的 CHANGELOG.md 获取详细信息\n\n## 🔧 改进\n- 性能优化和错误修复"
+          fi
+        else
+          # 如果没有 CHANGELOG.md 文件，使用默认内容
+          CHANGELOG_CONTENT="## 🚀 新功能\n- 最新版本发布\n\n## 🔧 改进\n- 性能优化和错误修复"
+        fi
+        
+        # 将 CHANGELOG 内容写入临时文件，处理换行符
+        echo -e "$CHANGELOG_CONTENT" > "${{ runner.temp }}/changelog_content.txt"
+        
+        # 替换模板中的占位符（使用不同的分隔符避免斜杠冲突）
+        sed -i '' "s|{{APP_NAME}}|${{ env.APP_NAME }}|g" "${{ runner.temp }}/release_notes.md"
+        sed -i '' "s|{{VERSION}}|${{ env.VERSION }}|g" "${{ runner.temp }}/release_notes.md"
+        sed -i '' "s|{{BUILD_NUMBER}}|${{ env.BUILD_NUMBER }}|g" "${{ runner.temp }}/release_notes.md"
+        sed -i '' "s|{{RELEASE_DATE}}|$(date '+%Y-%m-%d %H:%M:%S UTC')|g" "${{ runner.temp }}/release_notes.md"
+        sed -i '' "s|{{REPOSITORY}}|${{ github.repository }}|g" "${{ runner.temp }}/release_notes.md"
+        
+        # 替换 CHANGELOG 内容占位符
+        # 使用 awk 来处理多行替换
+        awk '
+        /{{CHANGELOG_CONTENT}}/ {
+          while ((getline line < "'${{ runner.temp }}'/changelog_content.txt") > 0) {
+            print line
+          }
+          close("'${{ runner.temp }}'/changelog_content.txt")
+          next
+        }
+        {print}
+        ' "${{ runner.temp }}/release_notes.md" > "${{ runner.temp }}/release_notes_final.md"
+        
+        # 替换原文件
+        mv "${{ runner.temp }}/release_notes_final.md" "${{ runner.temp }}/release_notes.md"
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.VERSION }}
+        name: ${{ env.APP_NAME }} ${{ env.VERSION }}
+        body_path: ${{ runner.temp }}/release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          ${{ env.DMG_PATH }}
+          ${{ env.ZIP_PATH }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APP_NAME }}-${{ env.VERSION }}-artifacts
+        path: |
+          ${{ env.DMG_PATH }}
+          ${{ env.ZIP_PATH }}
+        retention-days: 30
